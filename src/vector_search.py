@@ -12,22 +12,15 @@ import onnxruntime as ort
 import pandas as pd
 from tokenizers import Tokenizer
 
-# ── 모델 경로 ──────────────────────────────────────────────────────────────
-MODEL_DIR = (
-    Path.home()
-    / ".cache"
-    / "chroma"
-    / "onnx_models"
-    / "all-MiniLM-L6-v2"
-    / "onnx"
-)
-TOKENIZER_PATH = MODEL_DIR / "tokenizer.json"
-MODEL_PATH = MODEL_DIR / "model.onnx"
-
-# ── 프로젝트 경로 ──────────────────────────────────────────────────────────
+# ── 프로젝트 및 데이터 경로 ────────────────────────────────────────────────
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = PROJECT_ROOT / "data"
 CSV_PATH = DATA_DIR / "yes24_it_mobile_bestsellers.csv"
+
+# ── 모델 경로 ──────────────────────────────────────────────────────────────
+MODEL_DIR = PROJECT_ROOT / "models" / "all-MiniLM-L6-v2" / "onnx"
+TOKENIZER_PATH = MODEL_DIR / "tokenizer.json"
+MODEL_PATH = MODEL_DIR / "model.onnx"
 
 # ── 전역 캐시 ──────────────────────────────────────────────────────────────
 _tokenizer: Tokenizer | None = None
@@ -82,23 +75,22 @@ def _load_books() -> pd.DataFrame:
 
 
 def _compute_embeddings() -> np.ndarray:
-    """모든 도서의 임베딩을 계산하여 numpy 배열로 반환한다 (캐싱)."""
+    """모든 도서의 임베딩을 tsv 파일에서 로드하여 numpy 배열로 반환한다 (캐싱).
+
+    Returns:
+        도서 임베딩 행렬.
+    """
     global _book_embeddings
     if _book_embeddings is not None:
         return _book_embeddings
 
-    df = _load_books()
-    documents = (
-        df["도서명"].fillna("")
-        + " | 저자: "
-        + df["저자"].fillna("")
-        + " | 출판사: "
-        + df["출판사"].fillna("")
-    ).tolist()
-
-    print("임베딩 계산 중... (첫 실행 시 모델 로딩 필요)")
-    _book_embeddings = _embed(documents)
-    print(f"임베딩 계산 완료: {_book_embeddings.shape}")
+    tsv_path = DATA_DIR / "embeddings.tsv"
+    print(f"임베딩 로드 중: {tsv_path}")
+    
+    # pandas read_csv를 사용해 대용량 tsv를 신속하게 로드
+    df_emb = pd.read_csv(tsv_path, sep="\t", header=None, dtype=np.float32)
+    _book_embeddings = df_emb.values
+    print(f"임베딩 로드 완료: {_book_embeddings.shape}")
     return _book_embeddings
 
 
