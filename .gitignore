@@ -4,3 +4,10 @@ __pycache__/
 .agents/
 opencode.json
 *.xlsx
+*.xls
+*.pptx
+*.ppt
+node_modules/
+.vscode/
+.idea/
+.system_generated/

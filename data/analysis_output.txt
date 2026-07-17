@@ -1,0 +1,257 @@
+﻿=== 1. BASIC STATISTICS ===
+Total books: 1000
+Average price: 22959 won
+Median price: 21600 won
+Min price: 5625 won
+Max price: 85000 won
+
+=== 2. TOP 15 PUBLISHERS BY BOOK COUNT ===
+151 - 한빛미디어
+74 - 길벗
+55 - 이지스퍼블리싱
+53 - 커뮤니케이션북스
+47 - 골든래빗
+44 - 영진닷컴
+36 - 제이펍
+33 - 앤써북
+26 - 위키북스
+23 - 인사이트(insight)
+18 - BOOKK(부크크)
+17 - 에이콘출판사
+15 - 성안당
+15 - 디지털북스
+14 - 생능북스
+
+=== 3. TOP 15 AUTHORS BY BOOK COUNT ===
+9 - 박해선
+8 - 앤미디어
+8 - 지미정
+7 - 전수연
+7 - Mojang Studio
+7 - 김성훈
+6 - 박현규
+6 - 최재용
+6 - 박찬
+6 - 김병석
+6 - 강민혁
+6 - 김모세
+6 - 문수민
+5 - 임세범
+5 - 이현
+
+=== 4. PUBLICATION YEAR DISTRIBUTION ===
+2010: 1 books
+2012: 2 books
+2013: 4 books
+2014: 2 books
+2015: 1 books
+2016: 5 books
+2017: 2 books
+2018: 7 books
+2019: 7 books
+2020: 18 books
+2021: 15 books
+2022: 47 books
+2023: 36 books
+2024: 122 books
+2025: 326 books
+2026: 405 books
+
+=== 5. PRICE DISTRIBUTION ===
+Under 10,000: 5 books (0.5%)
+10,000-19,999: 404 books (40.4%)
+20,000-29,999: 445 books (44.5%)
+30,000-39,999: 118 books (11.8%)
+Over 40,000: 28 books (2.8%)
+
+=== 6. TOP 15 MOST COMMON TITLE KEYWORDS ===
+304 - AI
+87 - with
+59 - 배우는
+59 - 코딩
+46 - GPT
+45 - 디자인
+42 - 입문
+38 - 만들기
+37 - 바이브
+35 - 수업
+35 - 파이썬
+35 - 데이터
+34 - 가이드
+32 - it
+31 - 활용법
+
+=== 7. TOP 5 BOOKS BY RANK ===
+#1 | 바로바로 클로드 with 코워크, 스킬, 클로드 코드, 디자인 | Author: 차진우 | Publisher: 골든래빗 | Date: 2026년 05월 | Price: 25,200
+#2 | 혼자 공부하는 바이브 코딩 with 클로드 코드 | Author: 조태호 | Publisher: 한빛미디어 | Date: 2025년 12월 | Price: 27,000
+#3 | 뚝딱 바로 써먹는 AI 3대장 챗GPT · 제미나이 · 클로드 | Author: 코리아교육그룹 연구소 | Publisher: 안경다리BOOKS | Date: 2026년 06월 | Price: 19,800
+#4 | 이게 되네? 제미나이 완전 미친 활용법 81제 | Author: 오힘찬 | Publisher: 골든래빗 | Date: 2026년 02월 | Price: 21,600
+#5 | 요즘 교사를 위한 에듀테크 5대장 : 캔바, 패들렛, 북크리에이터, 노션, 챗GPT∙제미나이 | Author: 안익재, 황의태 | Publisher: 앤써북 | Date: 2025년 12월 | Price: 17,820
+
+=== 8. AVERAGE PRICE BY TOP 5 PUBLISHERERS ===
+한빛미디어 (151 books): Avg 25741 won
+길벗 (74 books): Avg 23264 won
+이지스퍼블리싱 (55 books): Avg 21440 won
+커뮤니케이션북스 (53 books): Avg 13940 won
+골든래빗 (47 books): Avg 24952 won
+
+=== 9. MONTHLY PUBLICATION TREND ===
+2010-09: 1 books
+2012-03: 1 books
+2012-11: 1 books
+2013-02: 1 books
+2013-05: 1 books
+2013-07: 1 books
+2013-12: 1 books
+2014-01: 1 books
+2014-08: 1 books
+2015-03: 1 books
+2016-01: 1 books
+2016-02: 1 books
+2016-03: 1 books
+2016-06: 1 books
+2016-07: 1 books
+2017-01: 1 books
+2017-03: 1 books
+2018-04: 2 books
+2018-06: 2 books
+2018-07: 1 books
+2018-10: 1 books
+2018-11: 1 books
+2019-04: 1 books
+2019-05: 1 books
+2019-06: 1 books
+2019-07: 2 books
+2019-12: 2 books
+2020-01: 2 books
+2020-02: 2 books
+2020-03: 1 books
+2020-04: 2 books
+2020-06: 1 books
+2020-07: 3 books
+2020-08: 2 books
+2020-09: 1 books
+2020-11: 2 books
+2020-12: 2 books
+2021-01: 1 books
+2021-02: 1 books
+2021-03: 1 books
+2021-04: 2 books
+2021-05: 1 books
+2021-06: 1 books
+2021-07: 1 books
+2021-08: 1 books
+2021-09: 1 books
+2021-11: 3 books
+2021-12: 2 books
+2022-01: 5 books
+2022-02: 6 books
+2022-03: 3 books
+2022-04: 1 books
+2022-05: 7 books
+2022-06: 4 books
+2022-07: 2 books
+2022-08: 3 books
+2022-09: 3 books
+2022-10: 6 books
+2022-11: 4 books
+2022-12: 3 books
+2023-01: 6 books
+2023-02: 2 books
+2023-04: 1 books
+2023-05: 4 books
+2023-06: 4 books
+2023-07: 2 books
+2023-08: 4 books
+2023-09: 9 books
+2023-10: 1 books
+2023-11: 2 books
+2023-12: 1 books
+2024-01: 7 books
+2024-02: 5 books
+2024-03: 5 books
+2024-04: 11 books
+2024-05: 7 books
+2024-06: 6 books
+2024-07: 4 books
+2024-08: 13 books
+2024-09: 11 books
+2024-10: 21 books
+2024-11: 21 books
+2024-12: 11 books
+2025-01: 23 books
+2025-02: 13 books
+2025-03: 17 books
+2025-04: 35 books
+2025-05: 25 books
+2025-06: 35 books
+2025-07: 24 books
+2025-08: 31 books
+2025-09: 33 books
+2025-10: 27 books
+2025-11: 32 books
+2025-12: 31 books
+2026-01: 44 books
+2026-02: 40 books
+2026-03: 50 books
+2026-04: 66 books
+2026-05: 63 books
+2026-06: 83 books
+2026-07: 57 books
+2026-08: 1 books
+2026-09: 1 books
+
+=== 10. ADDITIONAL INSIGHTS ===
+Education-focused books (교사/교육/수업/학교): 86 (8.6%)
+AI-related books: 409 (40.9%)
+Design-related books: 76 (7.6%)
+Programming/coding books: 166 (16.6%)
+
+--- TOOL MENTIONS ---
+m8n: 3 books
+코덱스/Codex: 4 books
+미리캔버스: 7 books
+챗GPT/ChatGPT: 50 books
+제미나이/Gemini: 35 books
+캡컷/CapCut: 7 books
+엑셀/Excel: 28 books
+캔바/Canva: 15 books
+노션/Notion: 8 books
+커서/Cursor: 8 books
+바이브코딩: 36 books
+클로드/Claude: 30 books
+피그마/Figma: 4 books
+
+--- 2026 PUBLICATIONS ---
+Total 2026 books: 405
+2026 avg price: 23330 won
+
+2026 Top Publishers:
+  57 - 한빛미디어
+  32 - 골든래빗
+  20 - 커뮤니케이션북스
+  19 - 길벗
+  16 - BOOKK(부크크)
+  15 - 제이펍
+  14 - 영진닷컴
+  13 - 이지스퍼블리싱
+  12 - 앤써북
+  11 - 위키북스
+
+2026 Monthly Publication Trend:
+  01월: 44 books
+  04월: 66 books
+  09월: 1 books
+  08월: 1 books
+  03월: 50 books
+  06월: 83 books
+  05월: 63 books
+  07월: 57 books
+  02월: 40 books
+
+--- PRICE PERCENTILES ---
+P10: 15120
+P25: 18000
+P50 (Median): 21600
+P75: 26600
+P90: 32400

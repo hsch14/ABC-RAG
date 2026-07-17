@@ -4,16 +4,24 @@ Streamlit을 사용하여 Yes24에서 수집한 IT 모바일 분야 베스트셀
 시각적으로 분석하고, 키워드 기반 도서 검색 기능을 제공하는 대시보드입니다.
 """
 
+import json
 import re
 import sys
 from pathlib import Path
 
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 import streamlit as st
 from collections import Counter
 from groq import Groq
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from vector_search import (
+    vector_search as _vs_search,
+    filter_books_by_price,
+    filter_books_by_rank,
+    format_books_for_context,
+)
 
 # ── 경로 설정 ──────────────────────────────────────────────────────────────
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -420,85 +428,92 @@ elif page == "🔍 도서 검색":
 
 
 # ══════════════════════════════════════════════════════════════════════════
-#  도서 추천 챗봇
+#  도서 추천 챗봇 (ONNX 벡터 검색 + Groq Function Calling)
 # ══════════════════════════════════════════════════════════════════════════
 elif page == "🤖 도서 추천 챗봇":
     st.title("🤖 도서 추천 챗봇")
-    st.markdown("관심 있는 주제나 키워드를 입력하면 맞춤형 도서를 추천해 드립니다.")
+    st.markdown("관심 있는 주제나 키워드를 입력하면 벡터 유사도 기반으로 맞춤형 도서를 추천해 드립니다.")
     st.markdown("---")
 
     if not groq_api_key:
         st.warning("사이드바에서 Groq API Key를 입력해 주세요.")
         st.stop()
 
-    # 세션 상태 초기화
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
 
-    def _search_books(query: str, top_n: int = 5) -> pd.DataFrame:
-        """사용자 질의와 관련된 도서를 검색한다."""
-        query_lower = query.lower()
-        keywords = re.findall(r"[가-힣]{2,}|[A-Za-z]{2,}", query_lower)
-        if not keywords:
-            return pd.DataFrame()
+    # ── Groq Function Calling 도구 정의 ────────────────────────────────────
+    TOOLS = [
+        {
+            "type": "function",
+            "function": {
+                "name": "filter_books_by_price",
+                "description": "가격 범위로 IT 모바일 베스트셀러 도서를 필터링합니다. 가격 질문 시 사용합니다.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "min_price": {
+                            "type": "integer",
+                            "description": "최소 가격 (원). 예: 10000",
+                        },
+                        "max_price": {
+                            "type": "integer",
+                            "description": "최대 가격 (원). 예: 30000",
+                        },
+                    },
+                    "required": ["min_price", "max_price"],
+                },
+            },
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "filter_books_by_rank",
+                "description": "순위(판매지수) 범위로 IT 모바일 베스트셀러 도서를 필터링합니다. 순위/판매지수 질문 시 사용합니다.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "min_rank": {
+                            "type": "integer",
+                            "description": "최소 순위 (이상). 예: 1",
+                        },
+                        "max_rank": {
+                            "type": "integer",
+                            "description": "최대 순위 (이하). 예: 10",
+                        },
+                    },
+                    "required": ["min_rank", "max_rank"],
+                },
+            },
+        },
+    ]
 
-        masks = []
-        for kw in keywords:
-            masks.append(df["도서명"].astype(str).str.lower().str.contains(kw, na=False))
-            masks.append(df["저자"].astype(str).str.lower().str.contains(kw, na=False))
-
-        combined = masks[0]
-        for m in masks[1:]:
-            combined = combined | m
-
-        matches = df[combined].copy()
-        if matches.empty:
-            return matches
-
-        # 키워드 매칭 점수 계산
-        def _score(row: pd.Series) -> int:
-            score = 0
-            title = str(row["도서명"]).lower()
-            author = str(row["저자"]).lower()
-            for kw in keywords:
-                if kw in title:
-                    score += 3
-                if kw in author:
-                    score += 1
-            return score
-
-        matches["매칭점수"] = matches.apply(_score, axis=1)
-        matches = matches.sort_values("매칭점수", ascending=False).head(top_n)
-        return matches
-
-    def _build_context(matches: pd.DataFrame) -> str:
-        """검색된 도서 목록을 LLM 컨텍스트 문자열로 만든다."""
-        if matches.empty:
-            return "검색된 도서가 없습니다."
-        lines = []
-        for _, row in matches.iterrows():
-            lines.append(
-                f"- [{row['도서명']}] (저자: {row['저자']}, 출판사: {row['출판사']}, "
-                f"가격: {row['가격']}원, 순위: {row['순위']}) 링크: {row['링크']}"
-            )
-        return "\n".join(lines)
+    SYSTEM_PROMPT = (
+        "당신은 Yes24 IT 모바일 베스트셀러 도서 추천 챗봇입니다.\n"
+        "사용자의 질문에 맞춰 친절하게 추천해 주세요.\n\n"
+        "## 함수 호출 규칙\n"
+        "- 사용자가 '가격', '원', '₩' 등 가격 관련 질문을 하면 filter_books_by_price를 호출하세요.\n"
+        "- 사용자가 '순위', '판매지수', '상위', '1위~10위' 등 순위 관련 질문을 하면 filter_books_by_rank를 호출하세요.\n"
+        "- 가격이나 순위 질문 시 반드시 함수를 호출하여 정확한 데이터를 반환하세요.\n"
+        "- 함수 호출 결과를 마크다운 표로 정리하여 보여주세요.\n\n"
+        "## 일반 추천 규칙\n"
+        "- 벡터 검색 결과의 유사도 점수가 높을수록 질문에 더 잘 맞는 도서입니다.\n"
+        "- 추천할 도서가 없다면 없다고 솔직하게 답변하세요.\n"
+        "- 각 도서에 대해 간단한 소개와 추천 이유를 포함하세요.\n"
+        "- 마크다운 형식으로 응답하세요.\n"
+        "- 각 도서에는 Yes24 상세보기 링크가 있으니, 응답에 반드시 포함하세요."
+    )
 
     def _chat_with_groq(user_message: str, api_key: str) -> str:
-        """Groq API를 사용하여 챗봇 응답을 생성한다."""
-        matches = _search_books(user_message)
-        context = _build_context(matches)
+        """Groq API + Function Calling으로 챗봇 응답을 생성한다."""
+        client = Groq(api_key=api_key)
 
-        system_prompt = (
-            "당신은 Yes24 IT 모바일 베스트셀러 도서 추천 챗봇입니다. "
-            "사용자의 질문에 맞춰 아래 도서 목록을 참고하여 친절하게 추천해 주세요. "
-            "추천할 도서가 없다면 없다고 솔직하게 답변하세요. "
-            "각 도서에 대해 간단한 소개와 추천 이유를 포함하세요. "
-            "마크다운 형식으로 응답하세요. "
-            "각 도서에는 Yes24 상세보기 링크가 있으니, 응답에 반드시 포함하세요."
-        )
+        # 벡터 검색으로 초기 컨텍스트 확보
+        books = _vs_search(user_message, top_n=5)
+        context = format_books_for_context(books)
 
         messages = [
-            {"role": "system", "content": system_prompt},
+            {"role": "system", "content": SYSTEM_PROMPT},
             {
                 "role": "user",
                 "content": (
@@ -508,30 +523,88 @@ elif page == "🤖 도서 추천 챗봇":
             },
         ]
 
-        client = Groq(api_key=api_key)
+        # 첫 번째 호출: tools 포함
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=messages,
+            tools=TOOLS,
+            tool_choice="auto",
             temperature=0.7,
             max_tokens=2048,
         )
-        return response.choices[0].message.content
 
-    # 이전 대화 표시
+        assistant_msg = response.choices[0].message
+
+        # tool_calls가 있으면 실행 후 결과를 LLM에 전달
+        if assistant_msg.tool_calls:
+            messages.append({
+                "role": "assistant",
+                "content": assistant_msg.content,
+                "tool_calls": [
+                    {
+                        "id": tc.id,
+                        "type": "function",
+                        "function": {
+                            "name": tc.function.name,
+                            "arguments": tc.function.arguments,
+                        },
+                    }
+                    for tc in assistant_msg.tool_calls
+                ],
+            })
+
+            for tc in assistant_msg.tool_calls:
+                func_name = tc.function.name
+                args = json.loads(tc.function.arguments)
+
+                if func_name == "filter_books_by_price":
+                    result = filter_books_by_price(
+                        min_price=args["min_price"],
+                        max_price=args["max_price"],
+                    )
+                elif func_name == "filter_books_by_rank":
+                    result = filter_books_by_rank(
+                        min_rank=args["min_rank"],
+                        max_rank=args["max_rank"],
+                    )
+                else:
+                    result = []
+
+                result_text = format_books_for_context(result[:20])
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": tc.id,
+                    "content": (
+                        f"함수: {func_name}\n"
+                        f"조건: {args}\n"
+                        f"검색 결과: {len(result)}권\n\n"
+                        f"{result_text}"
+                    ),
+                })
+
+            # 두 번째 호출: 도구 결과를 바탕으로 최종 응답
+            final = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=messages,
+                temperature=0.7,
+                max_tokens=2048,
+            )
+            return final.choices[0].message.content
+
+        return assistant_msg.content or "응답을 생성할 수 없습니다."
+
+    # ── 대화 표시 ──────────────────────────────────────────────────────────
     for msg in st.session_state.chat_history:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-    # 사용자 입력
     if user_input := st.chat_input("어떤 도서를 찾고 계신가요?"):
-        # 사용자 메시지 표시
         st.session_state.chat_history.append({"role": "user", "content": user_input})
         with st.chat_message("user"):
             st.markdown(user_input)
 
-        # 챗봇 응답
         with st.chat_message("assistant"):
-            with st.spinner("검색 중..."):
+            with st.spinner("검색 및 분석 중..."):
                 try:
                     bot_response = _chat_with_groq(user_input, groq_api_key)
                 except Exception as e:
@@ -542,7 +615,6 @@ elif page == "🤖 도서 추천 챗봇":
             {"role": "assistant", "content": bot_response}
         )
 
-    # 대화 초기화 버튼
     if st.session_state.chat_history:
         if st.button("대화 초기화"):
             st.session_state.chat_history = []
