@@ -76,4 +76,4 @@ python src/excel_dashboard.py
 ```bash
 streamlit run src/dashboard.py
 ```
-> 💡 챗봇 기능을 활용하려면 Streamlit 사이드바 메뉴에서 발급받으신 **Groq API Key**를 입력하셔야 합니다.
+> 💡 챗봇 기능을 활용하려면 Streamlit 사이드바 메뉴에서 발급받으신 Groq API Key를 입력하셔야 합니다.
